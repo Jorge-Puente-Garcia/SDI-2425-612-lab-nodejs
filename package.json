@@ -1,0 +1,14 @@
+{
+  "name": "tienda_musica",
+  "version": "1.0.0",
+  "description": "Tienda de música",
+  "main": "hello-word-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jorge-Puente-Garcia/SDI-2425-612-lab-nodejs"
+  },
+  "private": true
+}
