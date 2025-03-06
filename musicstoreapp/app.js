@@ -8,6 +8,12 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
+
+let bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
 require("./routes/songs.js")(app);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
