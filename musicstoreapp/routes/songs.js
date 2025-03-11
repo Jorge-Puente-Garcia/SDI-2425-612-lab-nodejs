@@ -42,7 +42,5 @@ module.exports = function (app) {
     res.send('Respuesta al patrón pro*ar');
   });
 
-
-
 };
 
