@@ -13,8 +13,11 @@ let bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const { MongoClient } = require("mongodb");
+const connectionStrings = 'mongodb+srv://admin:sdi@sdi.ffxse.mongodb.net/?retryWrites=true&w=majority&appName=SDI';
+const dbClient = new MongoClient(connectionStrings);
 
-require("./routes/songs.js")(app);
+require("./routes/songs.js")(app, dbClient);
 require("./routes/authors.js")(app);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

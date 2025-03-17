@@ -5,20 +5,30 @@ module.exports = function (app) {
             {"rol":"Violinista"},
             {"rol":"Saxofonista"},
             {"rol":"Pianista"},
+            {"rol":"MALO"},
             {"rol":"Cantante"}];
         let response={rol:'roles',roles:roles};
         res.render("authors/add.twig",response);
     });
 
     app.post('/authors/add', function(req, res) {
+        let roles=[{
+            "rol":"Trompetista"},
+            {"rol":"Violinista"},
+            {"rol":"Saxofonista"},
+            {"rol":"Pianista"},
+            {"rol":"Cantante"}];
         let response="";
         if(req.body.name ==null || req.body.name === "" ){
-            response="El campo del nombre no es correcto"+req.body.name;
-        }else if(req.body.group ==null || req.body.group === "" ){
-            response="El campo del grupo no es correcto"+req.body.group;
-        } else if(req.body.rol ==null || req.body.rol === "" ){
-            response="El campo del rol no es correcto"+req.body.rol;
-        }else{
+            response+="El campo del nombre no es correcto"+req.body.name+"<br>";
+        }
+        if(req.body.group ==null || req.body.group === "" ){
+            response+="El campo del grupo no es correcto"+req.body.group+"<br>";
+        }
+        if(!roles.some(r => r.rol.toLowerCase() === req.body.rol.toLowerCase())){
+            response+="El campo del rol no es correcto"+req.body.rol+"<br>";
+        }
+        if(response===""){
             response = "Autor agregado: " +req.body.name+"<br>"
                 +"grupo:"+req.body.group +"<br>"
                 +"rol: "+req.body.rol
