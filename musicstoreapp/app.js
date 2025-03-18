@@ -45,10 +45,12 @@ app.use("/publications",userSessionRouter);
 app.use("/audios/",userAudiosRouter);
 app.use("/shop/",userSessionRouter)
 
+let favoriteSongsRepository = require("./repositories/favoriteSongsRepository.js");
 let songsRepository = require("./repositories/songsRepository.js");
+favoriteSongsRepository.init(app, dbClient);
 songsRepository.init(app, dbClient);
 
-
+require("./routes/songs/favorites.js")(app, favoriteSongsRepository,songsRepository);
 require("./routes/songs.js")(app, songsRepository);
 require("./routes/authors.js")(app);
 // view engine setup
