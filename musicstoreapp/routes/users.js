@@ -31,7 +31,7 @@ module.exports = function (app, usersRepository) {
         req.session.user = user.email;
         res.send("Usuario identificado correctamente "+user.email);
       }
-    }).catch(err => {
+    }).catch(error => {
       req.session.user = null;
       res.send("Se ha producido un error al buscar el usuario: "+error)
     })
