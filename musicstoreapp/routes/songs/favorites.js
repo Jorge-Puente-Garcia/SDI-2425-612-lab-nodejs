@@ -13,11 +13,16 @@ module.exports = function (app,favoriteSongsRepository,songsRepository) {
         });
     })
 
-    app.get('/songs/favorites/delete/:song_id', function (req, res) {
-        let filter={_id: req.params.song_id };
-        favoriteSongsRepository.removeFavoriteSong(filter,{}).then(() => {
-            res.redirect('/songs/favorites/');
-        }).catch(error =>{
+    app.get('/songs/favorites/delete/:id', function (req, res) {
+        let filter={_id: new ObjectId(req.params.id) };
+        favoriteSongsRepository.removeFavoriteSong(filter,{}).then((result) => {
+            if(result === null || result.deletedCount === 0) {
+                res.send("No se ha podido eliminar el registro");
+            }else{
+                res.redirect('/songs/favorites/');
+            }
+        }
+        ).catch(error =>{
             res.send("Se ha producido un error al recuperar la canción "+error)
         })
     })
