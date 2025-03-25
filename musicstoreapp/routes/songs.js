@@ -1,9 +1,9 @@
 const {ObjectId} = require("mongodb");
 module.exports = function (app,songsRepository) {
-  app.get('/shop',function(req,res){
+  app.get('/shop', function (req, res) {
     let filter = {};
-    let options = {sort: { title: 1}};
-    if(req.query.search != null && typeof(req.query.search) != "undefined" && req.query.search != ""){
+    let options = {sort: {title: 1}};
+    if (req.query.search != null && typeof (req.query.search) != "undefined" && req.query.search != "") {
       filter = {"title": {$regex: ".*" + req.query.search + ".*"}};
     }
     let page = parseInt(req.query.page); // Es String !!!
@@ -28,8 +28,8 @@ module.exports = function (app,songsRepository) {
         currentPage: page
       }
       res.render("shop.twig", response);
-    }).catch(err =>{
-      res.send("Se ha producido un error al listar las canciones"+err)
+    }).catch(err => {
+      res.send("Se ha producido un error al listar las canciones" + err)
     });
   })
 
@@ -48,16 +48,16 @@ module.exports = function (app,songsRepository) {
 
 
   app.get("/songs", function (req, res) {
-    let songs=[{
-      "title":"Blank space", "price":"1.2"
+    let songs = [{
+      "title": "Blank space", "price": "1.2"
     },
-      {"title":"See you again", "price":"1.3"},
-      {"title":"Uptown funk", "price":"1.1"}];
-    let response={seller:'Tienda de canciones',songs:songs};
+      {"title": "See you again", "price": "1.3"},
+      {"title": "Uptown funk", "price": "1.1"}];
+    let response = {seller: 'Tienda de canciones', songs: songs};
     res.render("shop.twig", response);
   });
 
-  app.get('/add', function(req, res) {
+  app.get('/add', function (req, res) {
     let response = parseInt(req.query.num1) + parseInt(req.query.num2);
     res.send(String(response));
   });
@@ -65,11 +65,11 @@ module.exports = function (app,songsRepository) {
     res.render("songs/add.twig");
   });
   app.get('/songs/edit/:id', function (req, res) {
-    let filter={_id: new ObjectId(req.params.id) };
-    songsRepository.findSong(filter,{}).then((song) => {
-      res.render("songs/edit.twig",{song:song});
-    }).catch(err =>{
-      res.send("Se ha producido un error al recuperar la canción "+error)
+    let filter = {_id: new ObjectId(req.params.id)};
+    songsRepository.findSong(filter, {}).then((song) => {
+      res.render("songs/edit.twig", {song: song});
+    }).catch(err => {
+      res.send("Se ha producido un error al recuperar la canción " + error)
     })
   });
 
@@ -113,6 +113,7 @@ module.exports = function (app,songsRepository) {
       step2UpdateAudio(files, songId, callback); // SIGUIENTE
     }
   }
+
   function step2UpdateAudio(files, songId, callback) {
     if (files && files.audio != null) {
       let audio = files.audio;
@@ -129,29 +130,51 @@ module.exports = function (app,songsRepository) {
   }
 
   app.get('/songs/:id', function (req, res) {
-    let filter = {_id: new ObjectId(req.params.id)};
-    let options = {};
-    songsRepository.findSong(filter, options).then(song => {
-      res.render("songs/song.twig", {song: song});
-    }).catch(error => {
-      res.send("Se ha producido un error al buscar la canción " + error)
+    let filter = {user: req.session.user};
+    let options = {projection: {_id: 0, song_id: 1}};
+    songsRepository.getPurchases(filter, options).then(purchasedIds => {
+      let filter = {_id: new ObjectId(req.params.id)};
+      let options = {};
+      songsRepository.findSong(filter, options).then(song => {
+        let purchasedSongIds = purchasedIds.map(purchase => purchase.song_id.toString());
+        let propietario = purchasedSongIds.includes(song._id.toString());
+        if (!propietario) {
+          let filter = {author: req.session.user};
+          let options = {sort: {title: 1}};
+          songsRepository.getSongs(filter, options).then(songs => {
+            for (let song of songs) {
+              if (req.params.id === song._id.toString()) {
+                propietario = true;
+                break;
+              }
+            }
+            res.render("songs/song.twig", {song: song, propietario: propietario});
+          }).catch(error => {
+            res.send("Se ha producido un error al buscar la canción " + error)
+          });
+        } else {
+          res.render("songs/song.twig", {song: song, propietario: propietario});
+        }
+      }).catch(error => {
+        res.send("Se ha producido un error al buscar la canción " + error)
+      });
     });
-  })
+  });
 
-  app.get('/songs/:kind/:id', function(req, res) {
+  app.get('/songs/:kind/:id', function (req, res) {
     let response = 'id: ' + req.params.id + '<br>'
         + 'Tipo de música: ' + req.params.kind;
     res.send(response);
   });
 
-  app.post('/songs/add', function(req, res) {
+  app.post('/songs/add', function (req, res) {
     let song = {
       title: req.body.title,
       kind: req.body.kind,
       price: req.body.price,
       author: req.session.user
     }
-    songsRepository.insertSong(song,function(result){
+    songsRepository.insertSong(song, function (result) {
       if (result.songId !== null && result.songId !== undefined) {
         if (req.files != null) {
           let image = req.files.cover;
@@ -165,7 +188,7 @@ module.exports = function (app,songsRepository) {
                           res.redirect("/publications")
                       )
                       .catch(error => res.send("Error al subir el audio de la canción"))
-                }else {
+                } else {
                   res.send("Agregada la canción ID: " + result.songId)
                 }
               })
@@ -188,7 +211,7 @@ module.exports = function (app,songsRepository) {
   });
 
   app.get('/publications', function (req, res) {
-    let filter = {author : req.session.user};
+    let filter = {author: req.session.user};
     let options = {sort: {title: 1}};
     songsRepository.getSongs(filter, options).then(songs => {
       res.render("publications.twig", {songs: songs});
@@ -216,22 +239,49 @@ module.exports = function (app,songsRepository) {
   })
 
   app.post('/songs/buy/:id', function (req, res) {
-    let songId = new ObjectId(req.params.id);
-    let shop = {
-      user: req.session.user,
-      song_id: songId
-    }
-    songsRepository.buySong(shop).then(result => {
-      if (result.insertedId === null || typeof (result.insertedId) === undefined) {
-        res.send("Se ha producido un error al comprar la canción")
-      } else {
-        res.redirect("/purchases");
-      }
-    }).catch(error => {
-      res.send("Se ha producido un error al comprar la canción " + error)
-    })
+    let filter = {user: req.session.user};
+    let options = {projection: {_id: 0, song_id: 1}};
+    songsRepository.getPurchases(filter, options).then(purchasedIds => {
+      let filter = {_id: new ObjectId(req.params.id)};
+      let options = {};
+      songsRepository.findSong(filter, options).then(song => {
+        let purchasedSongIds = purchasedIds.map(purchase => purchase.song_id.toString());
+        let propietario = purchasedSongIds.includes(song._id.toString());
+        if (!propietario) {
+          let filter = {author: req.session.user};
+          let options = {sort: {title: 1}};
+          songsRepository.getSongs(filter, options).then(songs => {
+            for (let song of songs) {
+              if (req.params.id === song._id.toString()) {
+                res.send("Se ha producido un error al comprar la canción")
+                break;
+              }
+            }
+          }).catch(error => {
+            res.send("Se ha producido un error al buscar la canción " + error)
+          });
+        }
+        if (!propietario) {
+          let songId = new ObjectId(req.params.id);
+          let shop = {
+            user: req.session.user,
+            song_id: songId
+          }
+          songsRepository.buySong(shop).then(result => {
+            if (result.insertedId === null || typeof (result.insertedId) === undefined) {
+              res.send("Se ha producido un error al comprar la canción")
+            } else {
+              res.redirect("/purchases");
+            }
+          }).catch(error => {
+            res.send("Se ha producido un error al comprar la canción " + error)
+          })
+        }else{
+          res.send("Se ha producido un error al comprar la canción")
+        }
+      }).catch(error => {
+        res.send("Se ha producido un error al buscar la canción " + error)
+      });
+    });
   });
-
-
-};
-
+}

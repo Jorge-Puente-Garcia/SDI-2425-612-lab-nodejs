@@ -41,6 +41,7 @@ require("./routes/users.js")(app, usersRepository);
 const userSessionRouter = require('./routes/userSessionRouter');
 const userAudiosRouter = require('./routes/userAudiosRouter');
 app.use("/songs/add",userSessionRouter);
+app.use("/songs/favorites",userSessionRouter);
 app.use("/publications",userSessionRouter);
 app.use("/songs/buy",userSessionRouter);
 app.use("/purchases",userSessionRouter);
