@@ -58,6 +58,7 @@ songsRepository.init(app, dbClient);
 
 require("./routes/songs/favorites.js")(app, favoriteSongsRepository,songsRepository);
 require("./routes/songs.js")(app, songsRepository);
+require("./routes/api/songsAPIv1.0.js")(app, songsRepository);
 require("./routes/authors.js")(app);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
