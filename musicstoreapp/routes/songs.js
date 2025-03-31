@@ -148,12 +148,40 @@ module.exports = function (app,songsRepository) {
                 break;
               }
             }
-            res.render("songs/song.twig", {song: song, propietario: propietario});
+            if(!propietario) {
+              let settings = {
+                url: "https://api.currencyapi.com/v3/latest?apikey=cur_live_fadGk8ZdlBwfERRGOy7GHyEp4olA4WPjsRe8ktRy&base_currency=EUR&currencies=USD",
+                method: "get",
+              }
+              let rest = app.get("rest");
+              rest(settings, function (error, response, body) {
+                console.log("cod: " + response.statusCode + " Cuerpo :" + body);
+                let responseObject = JSON.parse(body);
+                let rateUSD = responseObject.data.USD.value;
+                // nuevo campo "usd" redondeado a dos decimales
+                let songValue = song.price / rateUSD
+                song.usd = Math.round(songValue * 100) / 100;
+                res.render("songs/song.twig", {song: song, propietario: propietario, canBuySong: !propietario});
+              })
+            }
           }).catch(error => {
             res.send("Se ha producido un error al buscar la canción " + error)
           });
         } else {
-          res.render("songs/song.twig", {song: song, propietario: propietario});
+          let settings = {
+            url: "https://api.currencyapi.com/v3/latest?apikey=cur_live_fadGk8ZdlBwfERRGOy7GHyEp4olA4WPjsRe8ktRy&base_currency=EUR&currencies=USD",
+            method: "get",
+          }
+          let rest = app.get("rest");
+          rest(settings, function (error, response, body) {
+            console.log("cod: " + response.statusCode + " Cuerpo :" + body);
+            let responseObject = JSON.parse(body);
+            let rateUSD = responseObject.data.USD.value;
+            // nuevo campo "usd" redondeado a dos decimales
+            let songValue = song.price / rateUSD
+            song.usd = Math.round(songValue * 100) / 100;
+            res.render("songs/song.twig", {song: song, propietario: propietario, canBuySong: !propietario});
+          })
         }
       }).catch(error => {
         res.send("Se ha producido un error al buscar la canción " + error)
@@ -284,4 +312,6 @@ module.exports = function (app,songsRepository) {
       });
     });
   });
+
+
 }
