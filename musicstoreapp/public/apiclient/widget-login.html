@@ -20,6 +20,7 @@
   </div>
 </div>
 <script>
+  window.history.pushState("", "", "/apiclient/client.html?w=login");
   $("#boton-login").click(function(){
     let email = $("#email").val();
     let password = $("#password").val();
@@ -30,15 +31,13 @@
       data: { email: email, password: password },
       dataType: "json",
       success: function(response){
-        if (response.token) {
           console.log("Token recibido bueno:", response.token);
           token = response.token;
+          Cookies.set('token', token);
           $("#main-container").load("widget-songs.html");
-        } else {
-          console.warn("La respuesta no tiene token");
-        }
       },
       error: function(error){
+        Cookies.remove('token');
         $("#widget-login")
                 .prepend("<div class='alert alert-danger'>Usuario no encontrado</div>");
       }
