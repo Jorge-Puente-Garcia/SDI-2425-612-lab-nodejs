@@ -4,6 +4,7 @@
         <div class="col-sm-10">
             <input type="text" class="form-control" name="title-add"
                    placeholder="Título de la canción" id="title-add" />
+            <span id="titleError" style="color: red;"></span><br>
         </div>
     </div>
     <div class="form-group">
@@ -11,6 +12,7 @@
         <div class="col-sm-10">
             <input type="text" class="form-control" name="kind-add"
                    placeholder="Género de la canción" id="kind-add" />
+            <span id="kindError" style="color: red;"></span><br>
         </div>
     </div>
     <div class="form-group">
@@ -18,6 +20,7 @@
         <div class="col-sm-10">
             <input type="number" step="0.01" class="form-control" name="price-add"
                    placeholder="2.50" id="price-add" />
+            <span id="priceError" style="color: red;"></span><br>
         </div>
     </div>
     <div class="col-sm-offset-2 col-sm-10">
@@ -42,8 +45,22 @@
                 console.log(response); // <-- Prueba
                 $("#main-container").load("widget-songs.html");
             },
-            error: function (error) {
-                $("#main-container").load("widget-login.html");
+            error: function (xhr) {
+                let errors;
+                try {
+                    errors = JSON.parse(xhr.responseText).errors; // Convertir manualmente
+                } catch (e) {
+                    console.error("Error al parsear JSON:", e);
+                    return;
+                }
+                if (xhr.status === 409 && errors) { // Validaciones del servidor
+                    if (errors.title) $("#titleError").text(errors.title);
+                    if (errors.kind) $("#kindError").text(errors.kind);
+                    if (errors.price) $("#priceError").text(errors.price);
+                    if (errors.author) $("#titleError").text(errors.author);
+                } else {
+                    $("#main-container").load("widget-login.html");
+                }
             }
         });
     }
